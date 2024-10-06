@@ -37,7 +37,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               ListTile(
                 enabled: Platform.isAndroid,
-                title: const Text("Restaurant Notification"),
+                title: const Text("Recommendation Restaurant"),
                 subtitle: Text(
                   "Notification ${state.settings.notification ? "enabled" : "disabled"}"
                   "${!Platform.isAndroid ? " (Android only)" : ""}",

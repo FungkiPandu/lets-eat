@@ -31,19 +31,21 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   Future<void> setNotificationSettings(bool isEnabled) async {
+    bool success = false;
     if (isEnabled) {
-      await AndroidAlarmManager.periodic(
-        const Duration(hours: 24),
+      success = await AndroidAlarmManager.periodic(
+        const Duration(minutes: 1),
         1,
         BackgroundService.callback,
         startAt: DateTimeHelper.format(),
         exact: true,
         wakeup: true,
       );
+      print("success $success");
     } else {
       await AndroidAlarmManager.cancel(1);
     }
-    await _sharedPrefHelper.saveBool(SettingKeys.notification.name, isEnabled);
+    await _sharedPrefHelper.saveBool(SettingKeys.notification.name, success);
     loadSettings();
   }
 }

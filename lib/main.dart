@@ -1,9 +1,16 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lets_eat/bloc/restaurant_favorites/restaurant_favorites_cubit.dart';
 import 'package:lets_eat/data/models/restaurant.dart';
+import 'package:lets_eat/helpers/background_service.dart';
 import 'package:lets_eat/helpers/database.dart';
+import 'package:lets_eat/helpers/navigation.dart';
+import 'package:lets_eat/helpers/notification.dart';
 import 'package:lets_eat/screens/restaurant_detail_page.dart';
 import 'package:lets_eat/screens/restaurant_favorites_page.dart';
 import 'package:lets_eat/screens/restaurant_list_page.dart';
@@ -12,8 +19,22 @@ import 'package:lets_eat/screens/settings_page.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = const AppBlocObserver();
+
+  final NotificationHelper notificationHelper = NotificationHelper();
+
+  final BackgroundService service = BackgroundService();
+  service.initializeIsolate();
+
+  if (Platform.isAndroid) {
+    await AndroidAlarmManager.initialize();
+  }
+
+  await notificationHelper.initNotifications(flutterLocalNotificationsPlugin);
+  notificationHelper.requestAndroidPermissions(flutterLocalNotificationsPlugin);
+
   runApp(const MyApp());
 }
 
@@ -48,11 +69,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final DatabaseHelper _dbHelper = DatabaseHelper();
   late final RestaurantFavoritesCubit restaurantFavoritesCubit;
 
+  Future getNotificationDetailOnLaunch() async {
+    final details = await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    final payload = details?.notificationResponse?.payload;
+    if (payload == null) return;
+    final restaurant = Restaurant.fromJson(jsonDecode(payload));
+    Navigation.intentWithData(RestaurantDetailPage.routeName, restaurant);
+  }
+
   @override
   void initState() {
     restaurantFavoritesCubit = RestaurantFavoritesCubit(_dbHelper);
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    getNotificationDetailOnLaunch();
   }
 
   @override
@@ -83,6 +113,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
           useMaterial3: true,
         ),
+        navigatorKey: navigatorKey,
         initialRoute: RestaurantListPage.routeName,
         routes: {
           RestaurantListPage.routeName: (context) => const RestaurantListPage(),
