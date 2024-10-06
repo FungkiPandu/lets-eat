@@ -5,7 +5,7 @@ class DateTimeHelper {
     // Date and Time Format
     final now = DateTime.now();
     final dateFormat = DateFormat('y/M/d');
-    const timeSpecific = "08:00:00";
+    const timeSpecific = "11:00:00";
     final completeFormat = DateFormat('y/M/d H:m:s');
 
     // Today Format
@@ -14,7 +14,7 @@ class DateTimeHelper {
     var resultToday = completeFormat.parseStrict(todayDateAndTime);
 
     // Tomorrow Format
-    var formatted = resultToday.add(const Duration(minutes: 1));
+    var formatted = resultToday.add(const Duration(days: 1));
     final tomorrowDate = dateFormat.format(formatted);
     final tomorrowDateAndTime = "$tomorrowDate $timeSpecific";
     var resultTomorrow = completeFormat.parseStrict(tomorrowDateAndTime);

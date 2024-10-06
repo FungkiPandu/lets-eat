@@ -34,7 +34,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     bool success = false;
     if (isEnabled) {
       success = await AndroidAlarmManager.periodic(
-        const Duration(minutes: 1),
+        const Duration(days: 1),
         1,
         BackgroundService.callback,
         startAt: DateTimeHelper.format(),
